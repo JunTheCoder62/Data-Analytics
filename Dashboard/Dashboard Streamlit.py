@@ -235,7 +235,7 @@ with st.sidebar:
         value=(min_date, max_date)
     )  # date range supported [web:117]
 
-# Sidebar
+# 5. Sidebar
 # Handle output date_input (kadang user cuma klik 1 tanggal)
 if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
     start_date, end_date = date_range
