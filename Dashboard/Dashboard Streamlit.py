@@ -4,10 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-# =========================
 # 1. KONFIGURASI & MAPPING
-# =========================
-
 st.set_page_config(layout="wide")
 
 # Mapping di level global (bisa dipakai di luar fungsi)
@@ -32,10 +29,7 @@ mapping_year = {0: 2011, 1: 2012}
 # Untuk menjamin urutan bulan kronologis saat sort [web:21][web:27]
 month_order = list(mapping_month.values())
 
-
-# =========================
 # 2. FUNGSI LOAD & CLEANING
-# =========================
 
 @st.cache_data
 def load_and_clean_data():
@@ -100,22 +94,13 @@ def load_and_clean_data():
     return day_df, hour_df
 
 
-# =========================
 # 3. LOAD DATA
-# =========================
-
 day_df, hour_df = load_and_clean_data()
 
-# =========================
 # 4. DASHBOARD
-# =========================
-
 st.title('Bike Sharing Data Analysis Dashboard')
 
-# -------------------------
 # 4.1 Jumlah Pengguna Rental Sepeda dalam 2 Tahun
-# -------------------------
-
 st.header('1. Jumlah Pengguna Rental Sepeda dalam 2 Tahun')
 
 # Buat kolom month_year
@@ -168,9 +153,7 @@ st.write(
 
 st.markdown('---')
 
-# -------------------------
 # 4.2 Durasi Rental Sepeda selama Hari Kerja dan Hari Libur per Jam
-# -------------------------
 
 st.header('2. Durasi Rental Sepeda selama Hari Kerja dan Hari Libur per Jam')
 
@@ -238,3 +221,33 @@ st.write(
     "hari kerja pada jam-jam puncak tersebut, menunjukkan pola penggunaan "
     "untuk rekreasi atau aktivitas non-komuter."
 )
+
+
+min_date = day_df['dteday'].min().date()
+max_date = day_df['dteday'].max().date()
+
+with st.sidebar:
+    st.image("https://github.com/AxelTheAxcelian/Data-by-data-Streamlit/raw/main/download.jpg")
+    date_range = st.date_input(
+        label='Rentang Waktu',
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date)
+    )  # date range supported [web:117]
+
+# Sidebar
+# Handle output date_input (kadang user cuma klik 1 tanggal)
+if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
+    start_date, end_date = date_range
+elif isinstance(date_range, (list, tuple)) and len(date_range) == 1:
+    start_date, end_date = date_range[0], date_range[0]
+else:
+    start_date, end_date = min_date, max_date
+
+start_ts = pd.to_datetime(start_date)
+end_ts = pd.to_datetime(end_date)
+
+# Filter by date range
+day_f = day_df[(day_df['dteday'] >= start_ts) & (day_df['dteday'] <= end_ts)]
+hour_f = hour_df[(hour_df['dteday'] >= start_ts) & (hour_df['dteday'] <= end_ts)]
+
