@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
+
 # 1. KONFIGURASI & MAPPING
 st.set_page_config(layout="wide")
 
