@@ -7,7 +7,6 @@ import numpy as np
 # 1. KONFIGURASI & MAPPING
 st.set_page_config(layout="wide")
 
-# Mapping di level global (bisa dipakai di luar fungsi)
 mapping_month = {
     1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June',
     7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'
@@ -26,14 +25,11 @@ mapping_weather = {
 
 mapping_year = {0: 2011, 1: 2012}
 
-# Untuk menjamin urutan bulan kronologis saat sort [web:21][web:27]
 month_order = list(mapping_month.values())
 
 # 2. FUNGSI LOAD & CLEANING
-
 @st.cache_data
 def load_and_clean_data():
-    # Load data
     day_df = pd.read_csv(
         'https://raw.githubusercontent.com/JunTheCoder62/Data-Analytics/refs/heads/main/Data/day.csv'
     )
@@ -58,12 +54,10 @@ def load_and_clean_data():
     day_df['weather_condition'] = day_df['weather_condition'].map(mapping_weather)
     day_df['year'] = day_df['year'].map(mapping_year)
 
-    # Drop kolom yang tidak dipakai
     day_df.drop(['windspeed', 'weekday'], axis=1, inplace=True)
 
-    # Tipe data
     day_df['year'] = day_df['year'].astype('object')
-    day_df['month'] = pd.Categorical(day_df['month'], categories=month_order, ordered=True)  # [web:21][web:27]
+    day_df['month'] = pd.Categorical(day_df['month'], categories=month_order, ordered=True)
     day_df['season'] = day_df['season'].astype('category')
     day_df['weather_condition'] = day_df['weather_condition'].astype('category')
     day_df['workingday'] = day_df['workingday'].astype('category')
@@ -87,15 +81,40 @@ def load_and_clean_data():
     hour_df['year'] = hour_df['year'].map(mapping_year)
     hour_df['weather_condition'] = hour_df['weather_condition'].map(mapping_weather)
     hour_df['month'] = hour_df['month'].map(mapping_month)
+    hour_df['month'] = pd.Categorical(hour_df['month'], categories=month_order, ordered=True)
 
-    # month sebagai categorical dengan urutan bulan
-    hour_df['month'] = pd.Categorical(hour_df['month'], categories=month_order, ordered=True)  # [web:21][web:27]
+    hour_df['dteday'] = pd.to_datetime(hour_df['dteday'])
 
     return day_df, hour_df
 
-
 # 3. LOAD DATA
 day_df, hour_df = load_and_clean_data()
+
+# 5. SIDEBAR (DATE RANGE)
+min_date = day_df['dteday'].min().date()
+max_date = day_df['dteday'].max().date()
+
+with st.sidebar:
+    st.image("https://github.com/AxelTheAxcelian/Data-by-data-Streamlit/raw/main/download.jpg")
+    date_range = st.date_input(
+        label='Rentang Waktu',
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date)
+    )
+
+if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
+    start_date, end_date = date_range
+elif isinstance(date_range, (list, tuple)) and len(date_range) == 1:
+    start_date, end_date = date_range[0], date_range[0]
+else:
+    start_date, end_date = min_date, max_date
+
+start_ts = pd.to_datetime(start_date)
+end_ts = pd.to_datetime(end_date)
+
+day_f = day_df[(day_df['dteday'] >= start_ts) & (day_df['dteday'] <= end_ts)]
+hour_f = hour_df[(hour_df['dteday'] >= start_ts) & (hour_df['dteday'] <= end_ts)]
 
 # 4. DASHBOARD
 st.title('Bike Sharing Data Analysis Dashboard')
@@ -103,25 +122,23 @@ st.title('Bike Sharing Data Analysis Dashboard')
 # 4.1 Jumlah Pengguna Rental Sepeda dalam 2 Tahun
 st.header('1. Jumlah Pengguna Rental Sepeda dalam 2 Tahun')
 
-# Buat kolom month_year
-plot_month_day_df = day_df['month'].astype(str)
-plot_years_day_df = day_df['year'].astype(str)
-day_df['month_year'] = plot_month_day_df + ' ' + plot_years_day_df
+plot_month_day_df = day_f['month'].astype(str)
+plot_years_day_df = day_f['year'].astype(str)
+day_f = day_f.copy()
+day_f['month_year'] = plot_month_day_df + ' ' + plot_years_day_df
 
-# Urutkan month_year: pakai year lalu urutan kategori month
 day_df_total_sum = (
-    day_df
+    day_f
     .groupby(['year', 'month'], sort=False)['count']
     .sum()
     .reset_index()
-    .sort_values(['year', 'month'])   # month ikut urutan Categorical [web:21][web:27]
+    .sort_values(['year', 'month'])
 )
 
 day_df_total_sum['month_year'] = (
     day_df_total_sum['month'].astype(str) + ' ' + day_df_total_sum['year'].astype(str)
 )
 
-# Plot line
 fig1, ax1 = plt.subplots(figsize=(15, 6))
 sns.lineplot(
     data=day_df_total_sum,
@@ -141,7 +158,7 @@ st.dataframe(day_df_total_sum[['month_year', 'count']])
 
 st.subheader("Total Rental Sepeda per Tahun")
 st.dataframe(
-    day_df.groupby(by='year')['count'].sum().reset_index()
+    day_f.groupby(by='year')['count'].sum().reset_index()
 )
 
 st.write(
@@ -154,15 +171,10 @@ st.write(
 st.markdown('---')
 
 # 4.2 Durasi Rental Sepeda selama Hari Kerja dan Hari Libur per Jam
-
 st.header('2. Durasi Rental Sepeda selama Hari Kerja dan Hari Libur per Jam')
 
-# Catatan dataset: 
-# - workingday = 1 jika BUKAN weekend dan BUKAN holiday [web:17][web:18]
-# - holiday    = 1 jika hari libur resmi [web:17][web:18]
-
-hour_df_workingday = hour_df[hour_df['workingday'] == 1]   # hari kerja sesungguhnya [web:17][web:18]
-hour_df_holiday = hour_df[hour_df['holiday'] == 1]         # benar-benar hari libur resmi [web:17][web:18]
+hour_df_workingday = hour_f[hour_f['workingday'] == 1]
+hour_df_holiday = hour_f[hour_f['holiday'] == 1]
 
 plot_hr_workingday_df = (
     hour_df_workingday
@@ -177,7 +189,6 @@ plot_hr_holiday_df = (
     .reset_index()
 )
 
-# Plot line per jam
 fig2, ax2 = plt.subplots(figsize=(12, 6))
 ax2.plot(
     plot_hr_workingday_df['hr'],
@@ -221,33 +232,3 @@ st.write(
     "hari kerja pada jam-jam puncak tersebut, menunjukkan pola penggunaan "
     "untuk rekreasi atau aktivitas non-komuter."
 )
-
-
-min_date = day_df['dteday'].min().date()
-max_date = day_df['dteday'].max().date()
-
-with st.sidebar:
-    st.image("https://github.com/AxelTheAxcelian/Data-by-data-Streamlit/raw/main/download.jpg")
-    date_range = st.date_input(
-        label='Rentang Waktu',
-        min_value=min_date,
-        max_value=max_date,
-        value=(min_date, max_date)
-    )  # date range supported [web:117]
-
-# 5. Sidebar
-# Handle output date_input (kadang user cuma klik 1 tanggal)
-if isinstance(date_range, (list, tuple)) and len(date_range) == 2:
-    start_date, end_date = date_range
-elif isinstance(date_range, (list, tuple)) and len(date_range) == 1:
-    start_date, end_date = date_range[0], date_range[0]
-else:
-    start_date, end_date = min_date, max_date
-
-start_ts = pd.to_datetime(start_date)
-end_ts = pd.to_datetime(end_date)
-
-# Filter by date range
-day_f = day_df[(day_df['dteday'] >= start_ts) & (day_df['dteday'] <= end_ts)]
-hour_f = hour_df[(hour_df['dteday'] >= start_ts) & (hour_df['dteday'] <= end_ts)]
-
