@@ -8,5 +8,5 @@ pip install pandas matplotlib seaborn streamlit
 ## Streamlit Dashboard
 Untuk menjalankan dashboard streamlit di lokal dapat menggunakan kode berikut di terminal:
 ```
-streamlit run dashboard.py
+streamlit run Dashboard Streamlit.py
 ```
