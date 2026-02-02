@@ -121,7 +121,7 @@ hour_f = hour_df[(hour_df['dteday'] >= start_ts) & (hour_df['dteday'] <= end_ts)
 st.title('Bike Sharing Data Analysis Dashboard')
 
 # 4.1 Jumlah Pengguna Rental Sepeda dalam 2 Tahun
-st.header('1. Jumlah Pengguna Rental Sepeda dalam 2 Tahun')
+st.header('1. Apakah penggunaan bike sharing menunjukkan pertumbuhan yang konsisten dari Februari hingga September 2012? Berapa total growth rate dan apakah setiap bulan menunjukkan peningkatan month-over-month')
 
 plot_month_day_df = day_f['month'].astype(str)
 plot_years_day_df = day_f['year'].astype(str)
@@ -172,7 +172,7 @@ st.write(
 st.markdown('---')
 
 # 4.2 Durasi Rental Sepeda selama Hari Kerja dan Hari Libur per Jam
-st.header('2. Durasi Rental Sepeda selama Hari Kerja dan Hari Libur per Jam')
+st.header('2. Apakah terdapat perbedaan signifikan dalam rata-rata jumlah bike rental antara hari kerja dan hari libur/weekend ?. Seberapa besar perbedaan tersebut dan apakah pola ini konsisten di seluruh musim?')
 
 hour_df_workingday = hour_f[hour_f['workingday'] == 1]
 hour_df_holiday = hour_f[hour_f['holiday'] == 1]
