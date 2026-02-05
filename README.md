@@ -12,5 +12,5 @@ pip streamlit
 ## Streamlit Dashboard
 Untuk menjalankan dashboard streamlit di lokal dapat menggunakan kode berikut di terminal:
 ```
-streamlit run "Dashboard Streamlit.py"
+ streamlit run "Dashboard Streamlit.py"
 ```
