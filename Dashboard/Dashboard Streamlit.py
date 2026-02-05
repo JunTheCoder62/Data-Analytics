@@ -233,3 +233,24 @@ st.write(
     "hari kerja pada jam-jam puncak tersebut, menunjukkan pola penggunaan "
     "untuk rekreasi atau aktivitas non-komuter."
 )
+
+st.write("### 📊 Conclusion Pertanyaan 1")
+st.write("""
+         Total penggunaan bike sharing meningkat drastis dari **1.243.103** di tahun 2011 
+         menjadi **2.049.576** di tahun 2012.  
+         Terjadi peningkatan konsisten dari Februari hingga September 2012, 
+         mencapai puncak tertinggi pada September 2012.  
+         Setelah September, penggunaan cenderung menurun hingga Desember, 
+         dan mulai meningkat kembali pada Februari, menunjukkan pola musiman 
+         yang konsisten antar tahun.
+""")
+
+st.write("### 🚴 Conclusion Pertanyaan 2")
+st.write("""
+         Terdapat perbedaan yang jelas dalam pola penggunaan antara **hari kerja** dan **hari libur**.  
+         Kedua jenis hari memiliki jam puncak penggunaan yang sama, yaitu pagi hari (**07.00 - 08.00**) 
+         dan sore hari (**17.00 - 18.00**).  
+         Jumlah total peminjaman pada jam-jam puncak tersebut lebih tinggi pada **hari libur** 
+         dibandingkan **hari kerja**, meskipun jam puncaknya serupa.
+""")
+
